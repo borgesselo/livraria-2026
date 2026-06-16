@@ -6,7 +6,15 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from core.models import Autor, Categoria, Compra, Editora, Livro, User
+from core.models import (
+    Autor,
+    Categoria,
+    Compra,
+    Editora,
+    ItensCompra,
+    Livro,
+    User,
+)
 
 
 @admin.register(Autor)
@@ -45,11 +53,20 @@ class LivroAdmin(admin.ModelAdmin):
     list_per_page = 25
 
 
+class ItensCompraInline(admin.TabularInline):
+    model = ItensCompra
+    extra = 1
+
+
 @admin.register(Compra)
 class CompraAdmin(admin.ModelAdmin):
     list_display = ('usuario', 'status')
+    search_fields = ('usuario__email', 'status')
+    list_filter = ('usuario', 'status')
     ordering = ('usuario', 'status')
     list_per_page = 10
+
+    inlines = [ItensCompraInline]
 
 
 @admin.register(User)
@@ -62,7 +79,6 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
 
-        # adicionado o campo foto aqui
         (_('Personal Info'), {'fields': ('name', 'foto')}),
 
         (
@@ -96,10 +112,7 @@ class UserAdmin(BaseUserAdmin):
                     'password1',
                     'password2',
                     'name',
-
-                    # adicionado o campo foto aqui
                     'foto',
-
                     'is_active',
                     'is_staff',
                     'is_superuser',
