@@ -55,10 +55,7 @@ format = "ruff format"
 
 [tool.pdm]
 distribution = false
-
-[[tool.pdm.autoexport]]
-filename = "requirements.txt"
-without-hashes = "true"
+# autoexport configuration removed because 'autoexport' is not allowed by the project schema
 
 [tool.ruff]
 line-length = 120

@@ -10,6 +10,8 @@ from django.contrib.auth.models import (
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from uploader.models import Image
+
 
 class UserManager(BaseUserManager):
     """Manager for users."""
@@ -21,15 +23,24 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError('Users must have an email address.')
 
-        user = self.model(email=self.normalize_email(email), **extra_fields)
+        user = self.model(
+            email=self.normalize_email(email),
+            **extra_fields
+        )
+
         user.set_password(password)
         user.save(using=self._db)
 
         return user
 
-    def create_superuser(self, email, password):
+    def create_superuser(self, email, password, **extra_fields):
         """Create, save and return a new superuser."""
-        user = self.create_user(email, password)
+        user = self.create_user(
+            email,
+            password,
+            **extra_fields
+        )
+
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
@@ -40,15 +51,40 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """User model in the system."""
 
-    email = models.EmailField(max_length=255, unique=True, verbose_name=_('email'), help_text=_('Email'))
-    name = models.CharField(max_length=255, blank=True, null=True, verbose_name=_('name'), help_text=_('Username'))
-    is_active = models.BooleanField(
-        default=True, verbose_name=_('Usuário está ativo'), help_text=_('Indica que este usuário está ativo.')
+    email = models.EmailField(
+        max_length=255,
+        unique=True,
+        verbose_name=_('email'),
+        help_text=_('Email')
     )
+
+    name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_('name'),
+        help_text=_('Username')
+    )
+
+    foto = models.ForeignKey(
+        Image,
+        related_name='user_foto',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        default=None,
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name=_('Usuário está ativo'),
+        help_text=_('Indica que este usuário está ativo.')
+    )
+
     is_staff = models.BooleanField(
         default=False,
         verbose_name=_('Usuário é da equipe'),
-        help_text=_('Indica que este usuário pode acessar o Admin.'),
+        help_text=_('Indica que este usuário pode acessar o Admin.')
     )
 
     objects = UserManager()
