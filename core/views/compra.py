@@ -1,3 +1,4 @@
+from rest_framework.serializers import CharField, ModelSerializer, SerializerMethodField
 from rest_framework.viewsets import ModelViewSet
 
 from core.models import Compra
