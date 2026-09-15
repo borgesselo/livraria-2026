@@ -22,6 +22,13 @@ class Compra(models.Model):
         default=StatusCompra.CARRINHO
     )
 
+    @property
+    def total(self):
+        return sum(
+            item.preco * item.quantidade
+            for item in self.itens.all()
+        )
+
 
 class ItensCompra(models.Model):
 
@@ -39,6 +46,12 @@ class ItensCompra(models.Model):
 
     quantidade = models.IntegerField(
         default=1
+    )
+
+    preco = models.DecimalField(
+    max_digits=7,
+    decimal_places=2,
+    default=0
     )
 
     def __str__(self):
