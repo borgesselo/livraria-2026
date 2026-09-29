@@ -22,6 +22,8 @@ class Compra(models.Model):
         default=StatusCompra.CARRINHO
     )
 
+    data = models.DateTimeField(auto_now_add=True)
+
     @property
     def total(self):
         return sum(
@@ -49,9 +51,9 @@ class ItensCompra(models.Model):
     )
 
     preco = models.DecimalField(
-    max_digits=7,
-    decimal_places=2,
-    default=0
+        max_digits=7,
+        decimal_places=2,
+        default=0
     )
 
     def __str__(self):

@@ -2,6 +2,7 @@ from django.db import transaction
 from rest_framework.serializers import (
     CharField,
     CurrentUserDefault,
+    DateTimeField,
     HiddenField,
     ModelSerializer,
     SerializerMethodField,
@@ -15,12 +16,12 @@ class ItensCompraSerializer(ModelSerializer):
 
     total = SerializerMethodField()
 
-    def get_total(self, instance):
+    def get_total(self, instance) -> float:
         return instance.livro.preco * instance.quantidade
 
     class Meta:
         model = ItensCompra
-        fields = ('quantidade', 'livro')
+        fields = ('quantidade', 'livro', 'total')
         depth = 1
 
 
@@ -127,6 +128,8 @@ class CompraSerializer(ModelSerializer):
         read_only=True
     )
 
+    data = DateTimeField(read_only=True)
+
     itens = ItensCompraSerializer(
         many=True,
         read_only=True
@@ -134,4 +137,4 @@ class CompraSerializer(ModelSerializer):
 
     class Meta:
         model = Compra
-        fields = ('id', 'usuario', 'status', 'itens')
+        fields = ('id', 'usuario', 'status', 'total', 'data', 'itens')

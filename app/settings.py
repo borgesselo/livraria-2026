@@ -144,9 +144,14 @@ SPECTACULAR_SETTINGS = {
 # Modelo de usuário personalizado
 AUTH_USER_MODEL = 'core.User'
 
-# Configurações do Django REST Framework
+# Configurações do Django REST Framework (bloco único)
 REST_FRAMEWORK = {
-    # 'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication',),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    ),
     'DEFAULT_PAGINATION_CLASS': 'app.pagination.CustomPagination',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'PAGE_SIZE': 10,
@@ -161,10 +166,3 @@ SIMPLE_JWT = {
 
 # Exibe as configurações principais para verificação
 print(f'{MODE = } \n{MEDIA_URL = } \n{DATABASES = }')
-
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly",
-    ),
-}
