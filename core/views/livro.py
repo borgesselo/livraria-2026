@@ -8,6 +8,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -25,11 +26,18 @@ from core.serializers import (
 class LivroViewSet(ModelViewSet):
     queryset = Livro.objects.all()
     serializer_class = LivroSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = [  # ruff: ignore[blank-lines-after-function-or-class]
-    'categoria__descricao',
-    'editora__nome',
-]
+
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+    ]
+
+    filterset_fields = [
+        'categoria__descricao',
+        'editora__nome',
+    ]
+
+    search_fields = ['titulo']
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -89,7 +97,10 @@ class LivroViewSet(ModelViewSet):
             .order_by('-total_vendidos')
         )
 
-        serializer = LivroMaisVendidoSerializer(livros, many=True)
+        serializer = LivroMaisVendidoSerializer(
+            livros,
+            many=True,
+        )
 
         if not serializer.data:
             return Response(
@@ -97,7 +108,10 @@ class LivroViewSet(ModelViewSet):
                 status=status.HTTP_200_OK,
             )
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
 
     @extend_schema(
         summary='Ajusta o estoque de um livro',
@@ -126,7 +140,8 @@ class LivroViewSet(ModelViewSet):
                         'Estoque insuficiente',
                         value={
                             'quantidade': [
-                                'A quantidade em estoque não pode ser negativa.'
+                                'A quantidade em estoque não pode '
+                                'ser negativa.'
                             ]
                         },
                         response_only=True,
