@@ -8,7 +8,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -30,6 +30,7 @@ class LivroViewSet(ModelViewSet):
     filter_backends = [
         DjangoFilterBackend,
         SearchFilter,
+        OrderingFilter,
     ]
 
     filterset_fields = [
@@ -38,6 +39,10 @@ class LivroViewSet(ModelViewSet):
     ]
 
     search_fields = ['titulo']
+
+    ordering_fields = ['titulo', 'preco']
+
+    ordering = ['titulo']
 
     def get_serializer_class(self):
         if self.action == 'list':
