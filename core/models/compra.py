@@ -24,19 +24,19 @@ class Compra(models.Model):
     usuario = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
-        related_name='compras'
+        related_name='compras',
     )
 
     status = models.IntegerField(
         choices=StatusCompra.choices,
-        default=StatusCompra.CARRINHO
+        default=StatusCompra.CARRINHO,
     )
 
     data = models.DateTimeField(auto_now_add=True)
 
     tipo_pagamento = models.IntegerField(
         choices=TipoPagamento.choices,
-        default=TipoPagamento.CARTAO_CREDITO
+        default=TipoPagamento.CARTAO_CREDITO,
     )
 
     @property
@@ -48,27 +48,24 @@ class Compra(models.Model):
 
 
 class ItensCompra(models.Model):
-
     compra = models.ForeignKey(
         Compra,
         on_delete=models.CASCADE,
-        related_name='itens'
+        related_name='itens',
     )
 
     livro = models.ForeignKey(
         Livro,
         on_delete=models.PROTECT,
-        related_name='+'
+        related_name='itens_compra',
     )
 
-    quantidade = models.IntegerField(
-        default=1
-    )
+    quantidade = models.IntegerField(default=1)
 
     preco = models.DecimalField(
         max_digits=7,
         decimal_places=2,
-        default=0
+        default=0,
     )
 
     def __str__(self):
