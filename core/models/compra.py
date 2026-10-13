@@ -1,3 +1,4 @@
+
 from django.db import models
 
 from .livro import Livro
@@ -39,12 +40,23 @@ class Compra(models.Model):
         default=TipoPagamento.CARTAO_CREDITO,
     )
 
-    @property
-    def total(self):
-        return sum(
-            item.preco * item.quantidade
-            for item in self.itens.all()
-        )
+    total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            self.total = sum(
+                (
+                    item.preco * item.quantidade
+                    for item in self.itens.all()
+                ),
+                start=0,
+            )
+
+        super().save(*args, **kwargs)
 
 
 class ItensCompra(models.Model):
@@ -57,7 +69,7 @@ class ItensCompra(models.Model):
     livro = models.ForeignKey(
         Livro,
         on_delete=models.PROTECT,
-        related_name='itens_compra',
+        related_name='+',
     )
 
     quantidade = models.IntegerField(default=1)
