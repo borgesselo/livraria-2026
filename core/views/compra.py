@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -73,5 +74,75 @@ class CompraViewSet(ModelViewSet):
                 'total_vendas': total_vendas,
                 'quantidade_vendas': quantidade_vendas,
             },
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        request=None,
+        responses={200: None, 400: None},
+        description=(
+            'Finaliza a compra, verificando o estoque '
+            'e atualizando a quantidade dos livros.'
+        ),
+        summary='Finalizar compra',
+    )
+    @action(detail=True, methods=['post'])
+    @transaction.atomic
+    def finalizar(self, request, pk=None):
+        compra = self.get_object()
+
+        # Verifica se a compra já foi finalizada.
+        if compra.status == Compra.StatusCompra.FINALIZADO:
+            return Response(
+                {'status': 'Compra já finalizada'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        itens = list(compra.itens.select_related('livro').all())
+
+        # Soma as quantidades caso o mesmo livro apareça
+        # mais de uma vez na compra.
+        quantidades_por_livro = {}
+
+        for item in itens:
+            livro_id = item.livro_id
+
+            if livro_id not in quantidades_por_livro:
+                quantidades_por_livro[livro_id] = {
+                    'livro': item.livro,
+                    'quantidade': 0,
+                }
+
+            quantidades_por_livro[livro_id]['quantidade'] += (
+                item.quantidade
+            )
+
+        # Confere todo o estoque antes de alterar qualquer livro.
+        for dados in quantidades_por_livro.values():
+            livro = dados['livro']
+            quantidade = dados['quantidade']
+
+            if quantidade > livro.quantidade:
+                return Response(
+                    {
+                        'status': 'Quantidade insuficiente',
+                        'livro': livro.titulo,
+                        'quantidade_disponivel': livro.quantidade,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # Como todo o estoque já foi validado, atualiza os livros.
+        for dados in quantidades_por_livro.values():
+            livro = dados['livro']
+            livro.quantidade -= dados['quantidade']
+            livro.save()
+
+        # Atualiza o status da compra.
+        compra.status = Compra.StatusCompra.FINALIZADO
+        compra.save()
+
+        return Response(
+            {'status': 'Compra finalizada'},
             status=status.HTTP_200_OK,
         )
